@@ -1,0 +1,29 @@
+body{
+  background: #666;
+}
+
+.control{
+  align-self: center;
+  display: flex;
+  align-items: center;
+  background: #ddd;
+  width: 850px;
+}
+
+.control .type{
+  padding-left: 20px;
+  flex : 1;
+}
+
+.control .size{
+  flex:1;
+}
+
+.control .color{
+  padding-left : 20px;
+  flex :1;
+}
+
+.control .reset{
+  flex:1;
+}
