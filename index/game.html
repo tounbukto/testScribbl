@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-<script src="./main.js" ></script>
-<script src="https://cdn.jsdelivr.net/npm/p5@1.2.0/lib/p5.js"></script>
 <script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.2.0/lib/p5.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js"
+integrity="sha512-BHtomM5XDcUy7tDNcrcX1Eh0RogdWiMdXl3wJcKB3PFekXb3l5aDzymaTher61u6vEZySnoC/SAj2Y/p918Y3w=="
+crossorigin="anonymous"></script>
+<script src="./main.js" ></script>
 <link rel="stylesheet" href="./style.css">
   <head>
     <meta charset="utf-8">
@@ -29,9 +32,25 @@
       <input type="color" id="color-draw" value="#000000">
     </div>
         <div class="resetButton">
+          <button type="button" onclick="ready()" id="ready">ready</button>
           <button type="button" id="reset">Reset</button>
         </div>
     </div>
-    <div id="canvas-wrapper"><div>
+
+    <div class="choices" id="words">
+      <button id="word1" onclick="wordToDraw(id)">qq</button>
+      <button id="word2" onclick="wordToDraw(id)">ww</button>
+      <button id="word3" onclick="wordToDraw(id)">ee</button>
+    </div>
+
+    <div class="container">
+      <div id="canvas-wrapper"></div>
+      <div class="chat">
+          <div class="messages" id="messages">
+          </div>
+          <input type="text" id="message" >
+          <button type="button" id="send" >Send</button>
+      </div>
+    </div>
   </body>
 </html>
