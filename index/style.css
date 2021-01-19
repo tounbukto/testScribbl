@@ -27,3 +27,35 @@ body{
 .control .reset{
   flex:1;
 }
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+}
+
+.chat {
+  height: 100%;
+  width: 350px;
+  background-color: darkgray;
+}
+
+.messages {
+  height: 600px;
+  width: auto;
+  overflow-y: auto;
+}
+
+.messages p{
+  background-color: lightgray;
+  color: black;
+  display: block;
+  padding: 5px;
+  text-decoration: none;
+}
+
+
+.choices{
+  display: none;
+}
