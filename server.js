@@ -6,6 +6,13 @@ const Game = require('./game')
 
 let server  = http.listen(3000);
 
+let io = socket(http,{
+  cors:{
+    origin: "http://192.168.1.104:3000",
+    methods:["GET","POST"]
+  }
+});
+
 let users = new Map();
 let games = new Map();
 
@@ -41,12 +48,7 @@ app.get('/submit_form',(req,res)=>{
 })
 
 
-let io = socket(http,{
-  cors:{
-    origin: "http://192.168.1.104:3000",
-    methods:["GET","POST"]
-  }
-});
+
 
 
 
@@ -64,7 +66,7 @@ function newConnection(socket){
 
 
   socket.on('message',(data)=>{
-    games[users[socket.id].user.room].message(data);
+    games[users[socket.id].user.room].message(data,socket);
   })
 
   socket.on('join',(user)=>{
@@ -77,7 +79,7 @@ function newConnection(socket){
     }
     users[socket.id] = newUser;
     if(games[user.room] === undefined){
-      games[user.room] = new Game(user.room,newUser,5,60);
+      games[user.room] = new Game(user.room,newUser,5,10);
       games[user.room].addPlayer(newUser);
     }
     else{

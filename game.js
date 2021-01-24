@@ -1,6 +1,7 @@
 const words = require('./word');
 let word = require('./word')
 module.exports =  class Game{
+    timer;
     roomId;
     users = [];
     admin;
@@ -20,13 +21,17 @@ module.exports =  class Game{
     disconnect(user){
         for(let i=0 ; i<this.users.length ; ++i){
             if(this.users[i].socket.id !== user.socket.id){
-                this.users[i].socket.emit('user deco',user.user);
+                this.users[i].socket.emit('user deco',user.socket.id);
             }
+        }
+        if(user.drawing === true ){
+            this.nextRound();
+            this.countDown();
+            this.roundTime = this.delay;
         }
         this.deleteUser(user);
         if(this.users.length <= 0 ){
-            this.roundNbr = -1;
-            this.roundTime = -1;
+            clearInterval(this.timer);
         }
     }
 
@@ -36,8 +41,13 @@ module.exports =  class Game{
         }
         let players=  [];
         for(let i=0 ; i<this.users.length ; ++i){
-            players.push(this.users[i].user);
-            this.users[i].socket.emit('user join',user.user);
+            let player = {
+                username : this.users[i].user.username,
+                id   : this.users[i].socket.id,
+                score : this.users[i].score
+            }
+            players.push(player);
+            this.users[i].socket.emit('user join',{username : user.user.username , id : user.socket.id});
         }
         user.socket.emit('players' ,players );
         this.users.push(user);
@@ -49,6 +59,9 @@ module.exports =  class Game{
                 this.users.splice(i,1);
                 break;
             }
+        }
+        if(this.readyPlayers > 0 && this.readyPlayers>=this.users.length){
+            this.play();
         }
     }
 
@@ -69,11 +82,12 @@ module.exports =  class Game{
 
 
     play(){
+        this.start = true;
         for(let i=0 ; i<this.users.length ; ++i){
             this.users[i].socket.emit('game started');
         }
-        this.start = true;
         this.nextRound();
+        this.countDown();
     }
 
     wordToDraw(word){
@@ -81,22 +95,22 @@ module.exports =  class Game{
     }
 
     countDown(){
-        let timer  = setInterval(()=>{ 
+        clearInterval(this.timer);
+        this.timer = setInterval(()=>{ 
             console.log(this.roundTime);
             if(this.roundTime-- <= 0 ){
                 this.clear();
                 for(let i=0 ; i<this.users.length ; ++i){
                         this.users[i].socket.emit('round finished');
                 }
-              if(--this.roundNbr >0){
-                  this.nextRound();
-                  this.start = false;
-                  for(let i=0 ; i<this.users.length ; i++){
-                      this.users[i].socket.emit('game finished',this.winner());
-                  }
-              }
-              this.roundTime = this.delay;
-              clearInterval(timer);
+                if(--this.roundNbr >0){
+                    this.roundTime = this.delay;
+                    this.nextRound();
+                }
+                else{
+                    this.gameFinished();
+                    clearInterval(this.timer);
+                }
             }
           }, 1000);
     }
@@ -124,7 +138,6 @@ module.exports =  class Game{
                 }
             }
         }
-        this.countDown();
     }
 
     draw(data ,SID){
@@ -152,19 +165,55 @@ module.exports =  class Game{
         }
     }
 
-    message(data){
-        for(let i=0 ; i<this.users.length ; ++i){
-            this.users[i].socket.emit('message',data);
+    message(data,socket){
+        if(data !== this.drawPicked){
+            for(let i=0 ; i<this.users.length ; ++i){
+                this.users[i].socket.emit('message',data);
+            }
+        }
+        else{
+            for(let i=0 ; i<this.users.length ; ++i){
+                if(this.users[i].socket.id === socket.id){
+                    console.log(this.users[i]);
+                    this.users[i].score +=100;
+                }
+            }
+            socket.emit('good Word', data);
         }
     }
 
     winner(){
-        let max = 0;
+        let max = -1;
+        let userWinner
         for(let i=0 ; i<this.users.length ; ++i){
-            if(this.users.score>max){
-                max = this.users.score;
+            if(this.users[i].score>max){
+                userWinner = this.users[i].user;
+                max = this.users[i].score;
             }
         }
-        return max;
+        return {
+            winner : userWinner,
+            score  : max 
+        };
+    }
+    
+    gameFinished(){
+        let winner = this.winner();
+        for(let i=0 ; i<this.users.length ; ++i){
+            this.users[i].socket.emit('game finished' , winner);
+            this.users[i].score = 0;
+        }
+        this.resetGame();
+    }
+
+
+    resetGame(){
+        this.readyPlayers = 0;
+        this.start = false;
+        this.roundNbr = 5;
+        this.roundTime = this.delay;
+        for(let i=0 ; i<this.users.length ; ++i){
+            this.users[i].score = 0;
+        }
     }
 }

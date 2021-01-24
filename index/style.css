@@ -35,9 +35,14 @@ body{
   height: 100%;
 }
 
+.players{
+  width: 500px;
+  background-color: aqua;
+}
+
 .chat {
   height: 100%;
-  width: 350px;
+  width: 40%;
   background-color: darkgray;
 }
 

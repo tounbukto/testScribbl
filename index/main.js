@@ -5,6 +5,7 @@ function _(selector){
 var socket = io();
 
 var drawing = false;
+var word_found = false;
 
 function setup(){
   let canvas  = createCanvas(1000,600);
@@ -14,7 +15,9 @@ function setup(){
   send.addEventListener("click",(e)=>{
     e.preventDefault();
     let message = _('#message');
-    socket.emit('message',message.value);
+    if(message.value !== '' && !word_found){
+      socket.emit('message',message.value);
+    }
     message.value = '';
   });
   let textArea = _('#message');
@@ -42,6 +45,12 @@ function setup(){
     }).RoomId
   }
 
+  {
+    let playersNames = _('#players');
+    let newPlayer = document.createElement('p');
+    newPlayer.textContent = user.username;
+    playersNames.appendChild(newPlayer);
+  }
 
   socket.emit('join',user);
   socket.on('drawL',(data)=>{
@@ -52,17 +61,28 @@ function setup(){
   })
 
   socket.on('user join',(user)=>{
-    console.log('hada joina ');
-    console.log(user);
+    let playersNames = _('#players');
+    let newPlayer = document.createElement('p');
+    newPlayer.textContent = user.username;
+    newPlayer.id = user.id;
+    playersNames.appendChild(newPlayer);
   })
 
-  socket.on('deco',(user)=>{
-    console.log('hada mchaa ')
-    console.log(user);
+  socket.on('user deco',(user)=>{
+    let playersNames = _('#players');
+    let userDeco = _(`#${user}`);
+    playersNames.removeChild(userDeco);
   })
 
   socket.on('players', (players)=>{
-    console.log(players);
+    let playersNames = _('#players');
+    
+    for(let i=0 ; i<players.length ; ++i){
+      let newPlayer = document.createElement('p');
+      newPlayer.textContent = players[i].username;
+      newPlayer.id = `${players[i].id}`;
+      playersNames.appendChild(newPlayer);
+    }
   })
 
   socket.on('message',(message)=>{
@@ -82,10 +102,16 @@ function setup(){
   socket.on('clear',()=>{
     clear();
     background(255);
+    word_found = false;
   })
 
-  socket.on('game finished' , ()=>{
-    console.log('game salat a akhwa');
+  socket.on('game finished' , (data)=>{
+
+    let button = _('#ready');
+    button.style.display = 'block';
+    button.disabled = false;
+    button.backgroundColor = '';
+    _('#words').style.display = 'none';
   })
 
   socket.on('stop drawing', ()=>{
@@ -95,7 +121,6 @@ function setup(){
 
   socket.on('timer' , (time) => {
     let timer = setInterval(() => {
-      console.log(time);
       time--;
       if(time <= 0 ){
         clearInterval(timer);
@@ -112,37 +137,22 @@ function setup(){
     _('#ready').style.display = "none";
   });
   
-  socket.on('user deco',(user)=>{
-    console.log('user deconnect ' + user);
-  })
-
-  // socket.on('timer' , (obj) => {
-  //   let time = obj[0];
-  //   let update = time;
-  //   console.log('time dal game li ba9i : '+time);
-  //   let latency = new Date().getTime() - obj[1];
-  //   console.log('retard : '+latency);
-  //   time = (time*1000)-latency;
-  //   update = time/update;
-  //   console.log('update :' +update);
-  //   let timer = setInterval(() => {
-  //     console.log(parseInt(time/1000));
-  //     time-=update;
-  //     if(time <= 0 ){
-  //       clearInterval(timer);
-  //     }
-  //   }, update)
-  // })
-
-
 
   socket.on('Udraw',(data)=>{
       drawing = true;
-      console.log(data);
       _('#word1').innerHTML = data[0];
       _('#word2').innerHTML = data[1];
       _('#word3').innerHTML = data[2];
       _('#words').style.display = 'block';
+      word_found = true;
+  })
+
+  socket.on('good Word',(data)=>{
+    let newMsg = document.createElement('p');
+    newMsg.textContent = 'GOOD WORD : '+data;
+    _('#messages').appendChild(newMsg);
+    _('#messages').scrollTop = _('#messages').scrollHeight;
+    word_found = true;
   })
 }
 
