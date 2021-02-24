@@ -1,4 +1,6 @@
 var express = require("express")
+const UUID = require('uuid');
+const roomId = UUID.v4;
 var app = express();
 var socket  = require("socket.io")
 var http = require("http").createServer(app);
@@ -8,7 +10,7 @@ let server  = http.listen(3000);
 
 let io = socket(http,{
   cors:{
-    origin: "http://192.168.1.104:3000",
+    origin: "http://41.141.71.145:3000",
     methods:["GET","POST"]
   }
 });
@@ -37,6 +39,10 @@ app.get('/style.css',(req,res)=>{
   res.status(200).sendfile("index/style.css");
 })
 
+app.get('/join_game',(req,res)=>{
+    // var room = req.query.room;
+    res.status(200).sendfile("index/game.html");
+})
 
 app.get('/submit_form',(req,res)=>{
   user = {
@@ -47,7 +53,14 @@ app.get('/submit_form',(req,res)=>{
   res.status(200).sendfile("index/game.html")
 })
 
-
+app.get('/create',(req,res)=>{
+  user = {
+    username: req.query.username,
+    room:roomId()
+  };
+  res.query = user;
+  res.status(200).sendfile("index/game.html");
+})
 
 
 
@@ -70,6 +83,8 @@ function newConnection(socket){
   })
 
   socket.on('join',(user)=>{
+    user.room = roomId();
+    console.log(user.room);
     let newUser = {
       user: user,
       socket : socket,
@@ -77,6 +92,28 @@ function newConnection(socket){
       drew : false,
       score : 0
     }
+    users[socket.id] = newUser;
+    if(games[user.room] === undefined){
+      games[user.room] = new Game(user.room,newUser,5,10);
+      games[user.room].addPlayer(newUser);
+    }
+    else{
+      games[user.room].addPlayer(newUser);
+    }
+  });
+
+  socket.on('joinRoom',(user)=>{
+    // user.room = roomId();
+    console.log(user.room);
+    let newUser = {
+      user: user,
+      socket : socket,
+      drawing : false,
+      drew : false,
+      score : 0
+    }
+
+    
     users[socket.id] = newUser;
     if(games[user.room] === undefined){
       games[user.room] = new Game(user.room,newUser,5,10);

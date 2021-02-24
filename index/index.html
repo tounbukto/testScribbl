@@ -8,8 +8,16 @@
     <h1>formulaire</h1>
     <form action="submit_form" id="form-login" method="get">
           <input type="text" id="user" name="username" value="username">
-          <input type="text" id="room" name="RoomId" value="RoomId">
-          <input type="submit" name="sumbit" value="enter">
+          <input type="button" id="Create" value="Create game">
+          <input type="submit" name="play" value="enter">
     </form>
   </body>
+  <script>
+    document.querySelector('#Create').addEventListener('click',function() { 
+      let username = document.querySelector('#user').value;
+      location.href = `/create?username=${username}`;
+      if(username !== ""){
+      }
+     });
+    </script>
 </html>

@@ -44,6 +44,7 @@ function setup(){
       ignoreQueryPrefix : true
     }).RoomId
   }
+  console.log(user);
 
   {
     let playersNames = _('#players');
@@ -51,14 +52,18 @@ function setup(){
     newPlayer.textContent = user.username;
     playersNames.appendChild(newPlayer);
   }
-
-  socket.emit('join',user);
-  socket.on('drawL',(data)=>{
+  console.log(user.room);
+  if(user.room === undefined){
+    socket.emit('join',user);
+  }else{
+    socket.emit('joinRoom',user);
+  }
+socket.on('drawL',(data)=>{
     fill(data.color);
     strokeWeight(data.size);
     stroke(data.color)
     line(data.px,data.py,data.x,data.y);
-  })
+  });
 
   socket.on('user join',(user)=>{
     let playersNames = _('#players');
