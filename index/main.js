@@ -52,10 +52,13 @@ function setup(){
     newPlayer.textContent = user.username;
     playersNames.appendChild(newPlayer);
   }
-  console.log(user.room);
+  
   if(user.room === undefined){
     socket.emit('join',user);
-  }else{
+  }else if(user.room === '?'){
+    socket.emit('createRoom',user);
+  }
+  else{
     socket.emit('joinRoom',user);
   }
 socket.on('drawL',(data)=>{

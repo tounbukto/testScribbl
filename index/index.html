@@ -15,9 +15,7 @@
   <script>
     document.querySelector('#Create').addEventListener('click',function() { 
       let username = document.querySelector('#user').value;
-      location.href = `/create?username=${username}`;
-      if(username !== ""){
-      }
+      location.href = `/create?username=${username}&RoomId=?`;
      });
     </script>
 </html>
